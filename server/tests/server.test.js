@@ -7,6 +7,7 @@ const Todo = mongoose.model('Todo');
 const {ObjectID} = require('mongodb');
 
 const idForTesting = new ObjectID();
+const port = process.env.port || 3000;
 
 const todos = [{
   text: 'First test todo',
