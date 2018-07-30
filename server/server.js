@@ -56,6 +56,26 @@ if (!ObjectID.isValid(id)) {
   })
 });
 
+app.delete('/todos/:id', (req, res) => {
+  var {id} = req.params;
+//check if is ID valid if not send 400 send empty body
+if (!ObjectID.isValid(id)) {
+  return res.status(400).send({error:'Invalid ID'});
+}
+
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if (todo) {
+      res.status(200).send({todo});
+    } else {
+      res.status(404).send();
+    }
+  }, (err) => {
+    if (err) {
+      res.status(400).send(e);
+    }
+  })
+});
+
 
 
 app.listen(port, () => {
