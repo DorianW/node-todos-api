@@ -7,13 +7,17 @@ const Todo = mongoose.model('Todo');
 const {ObjectID} = require('mongodb');
 
 const idForTesting = new ObjectID();
+const idForTesting2 = new ObjectID();
+
 
 const todos = [{
   text: 'First test todo',
   _id: idForTesting
 }, {
   text: 'Second test todo',
-  _id: new ObjectID()
+  _id: idForTesting2,
+  completed: true,
+  completedAt: 666
 }]
 
 beforeEach((done) => {
@@ -137,5 +141,55 @@ describe('DELETE /todos/:id', () => {
     .get('/todos/123')
     .expect(400)
     .end(done);
+  });
+});
+
+describe('PATCH /todos', () => {
+  it('should update the todos', (done) => {
+    var text = "Updated by unit test";
+    //get ID of first item, make patch request and send data to update text and set completed to true
+    //check if 200 and custom expect, check text and completed is true and completed at is a number
+    request(app)
+    .patch(`/todos/${idForTesting.toHexString()}`)
+    .send({
+      text,
+      completed: true
+    })
+    .expect(200)
+    .end((err, res) => {
+      if (err) {
+        return done(err);
+      }
+      Todo.findById(idForTesting.toHexString()).then((todo) => {
+        expect(todo.completed).toBe(true);
+        expect(typeof todo.completedAt).toBe('number');
+        done();
+      }).catch((e) => done(e));
+    });
+  });
+
+  it('should clear completedAt when todo is not completed', (done) => {
+    var text = "Updated by unit test";
+    //get second id of id set completed to false
+    //200
+    //completed to false
+    //completedAt null
+    request(app)
+    .patch(`/todos/${idForTesting2.toHexString()}`)
+    .send({
+      text,
+      completed: false
+    })
+    .expect(200)
+    .end((err, res) => {
+      if (err) {
+        return done(err);
+      }
+      Todo.findById(idForTesting.toHexString()).then((todo) => {
+        expect(todo.completed).toBe(false);
+        expect(todo.completedAt).toBe(null);
+        done();
+      }).catch((e) => done(e));
+    });
   });
 });
