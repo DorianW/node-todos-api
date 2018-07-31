@@ -15,7 +15,6 @@ var app = express();
 app.use(bodyParser.json());
 
 app.post('/todos', (req, res) => {
-  //console.log(req.body);
   var text = req.body.text;
   var newTodo = new Todo({text});
   newTodo.save().then((doc) => {
@@ -101,12 +100,29 @@ app.patch('/todos/:id', (req, res) => {
 
   }).catch((e) => {
     res.status(400).send();
-  })
+  });
 
-})
+});
+
+//Users
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+  var user = new User(body);
+
+  user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token) => {
+    res.header('x-auth', token).status(200).send(user.toJSON());
+  })
+  .catch((err) => {
+    console.log(err);
+    res.status(400).send(err);
+  });
+
+});
 
 app.listen(process.env.PORT, () => {
   console.log(`Started on port ${process.env.PORT}`);
-})
+});
 
 module.exports = {app};
