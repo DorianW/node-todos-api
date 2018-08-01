@@ -1,8 +1,10 @@
 const expect = require('expect');
 const request = require('supertest');
-const {mongoose} = require('./../db/mongoose');
+const _ = require('lodash');
 
+const {mongoose} = require('./../db/mongoose');
 const {app} = require('./../server');
+
 const Todo = mongoose.model('Todo');
 const User = mongoose.model('User');
 const {ObjectID} = require('mongodb');
@@ -222,7 +224,7 @@ describe('POST /users', () => {
           expect(user).toBeTruthy();
           expect(user.password).not.toBe(password);
           done();
-        });
+        }).catch((err) => done(err));
       });
   });
 
@@ -246,5 +248,47 @@ describe('POST /users', () => {
       .send({email, password})
       .expect(400)
       .end(done);
+  });
+});
+
+describe('POST /users/login', () => {
+  it('should login user and return auth token', (done) => {
+    request(app)
+    .post('/users/login')
+    .send({
+      email: users[1].email,
+      password: users[1].password
+    })
+    .expect(200)
+    .expect((res) => {
+      expect(res.headers['x-auth']).toBeTruthy();
+    })
+    .end((err, res) => {
+      if (err) {
+        return done(err);
+      }
+
+      User.findById(users[1]._id).then((user) => {
+        expect(_.pick(user.tokens[0],['access', 'token'])).toMatchObject({
+          access: 'auth',
+          token: res.headers['x-auth']
+        });
+        done();
+      }).catch((err) => done(err));
+    });
+  });
+
+  it('should reject invalid login of user', (done) => {
+    request(app)
+    .post('/users/login')
+    .send({
+      email: users[1].email,
+      password: users[1].password + 'bla'
+    })
+    .expect(401)
+    .expect((res) => {
+      expect(res.headers['x-auth']).toBeFalsy();
+    })
+    .end(done);
   });
 });
