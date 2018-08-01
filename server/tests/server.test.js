@@ -6,25 +6,10 @@ const {app} = require('./../server');
 const Todo = mongoose.model('Todo');
 const {ObjectID} = require('mongodb');
 
-const idForTesting = new ObjectID();
-const idForTesting2 = new ObjectID();
+const {todos, populateTodos, idForTesting, idForTesting2, populateUsers, users, userOneId, userTwoId} = require('./seed/seed');
 
-
-const todos = [{
-  text: 'First test todo',
-  _id: idForTesting
-}, {
-  text: 'Second test todo',
-  _id: idForTesting2,
-  completed: true,
-  completedAt: 666
-}]
-
-beforeEach((done) => {
-  Todo.remove({}).then(() => {
-    return Todo.insertMany(todos);
-  }).then(() => done());
-});
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 
 describe('POST /todos', () => {
   it('should create a new todo', (done) => {
