@@ -15,9 +15,13 @@ var app = express();
 //Check midware again
 app.use(bodyParser.json());
 
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
   var text = req.body.text;
-  var newTodo = new Todo({text});
+  var newTodo = new Todo({
+    text,
+    _creator: req.user._id
+  });
+
   newTodo.save().then((doc) => {
     res.status(200).send(doc);
   }, (err) => {
@@ -27,8 +31,10 @@ app.post('/todos', (req, res) => {
   });
 });
 
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id
+  }).then((todos) => {
     res.send({todos});
   }, (err) => {
     if (err) {
