@@ -41,7 +41,11 @@ const users = [{
 }, {
   _id: userTwoId,
   email: 'secondName@example.com',
-  password: 'secondUserPassword'
+  password: 'secondUserPassword',
+  tokens: [{
+    access: 'auth',
+    token: jwt.sign({_id:userTwoId, access: 'auth'}, 'secret value').toString()
+  }]
 }];
 
 const populateUsers = (done) => {
